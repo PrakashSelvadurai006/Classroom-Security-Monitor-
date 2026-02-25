@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Entry Logs{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">📋 Entry Logs</div>
+        <div class="page-subtitle">All detected face entry events</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Detection History</div>
+        <span class="text-muted" style="font-size:13px;">Page {{ logs.page }} of {{ logs.pages }}</span>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date & Time</th>
+                    <th>Student</th>
+                    <th>Status</th>
+                    <th>Confidence</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if logs.items %}
+                {% for log in logs.items %}
+                <tr>
+                    <td class="text-muted">{{ log.id }}</td>
+                    <td>{{ log.entry_time.strftime('%d %b %Y · %H:%M:%S') }}</td>
+                    <td>
+                        {% if log.student %}
+                        <strong>{{ log.student.name }}</strong>
+                        <div class="text-muted" style="font-size:11px;">{{ log.student.student_id }}</div>
+                        {% else %}
+                        <span class="text-muted">Unknown person</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.is_recognized %}
+                        <span class="badge badge-green">✅ Recognised</span>
+                        {% else %}
+                        <span class="badge badge-red">❌ Unknown</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.confidence_score %}
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span>{{ '%.1f%%' % (log.confidence_score * 100) }}</span>
+                            <div style="width:60px;height:4px;background:var(--border);border-radius:2px;">
+                                <div style="width:{{ (log.confidence_score * 100)|int }}%;height:100%;
+                                background:{% if log.confidence_score > 0.85 %}var(--accent-green)
+                                           {% elif log.confidence_score > 0.75 %}var(--accent-yellow)
+                                           {% else %}var(--accent-red){% endif %};
+                                border-radius:2px;"></div>
+                            </div>
+                        </div>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="text-muted">{{ log.notes or '—' }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr class="empty-row">
+                    <td colspan="6">No entry logs recorded yet. Start monitoring to capture entries.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if logs.pages > 1 %}
+    <div class="pagination">
+        {% if logs.has_prev %}
+        <a href="{{ url_for('entry_logs', page=logs.prev_num) }}" class="page-btn">← Prev</a>
+        {% else %}
+        <button class="page-btn" disabled>← Prev</button>
+        {% endif %}
+
+        {% for p in logs.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+        {% if p %}
+        <a href="{{ url_for('entry_logs', page=p) }}" class="page-btn {% if p == logs.page %}current{% endif %}">{{ p
+            }}</a>
+        {% else %}
+        <span class="page-btn" style="cursor:default;">…</span>
+        {% endif %}
+        {% endfor %}
+
+        {% if logs.has_next %}
+        <a href="{{ url_for('entry_logs', page=logs.next_num) }}" class="page-btn">Next →</a>
+        {% else %}
+        <button class="page-btn" disabled>Next →</button>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

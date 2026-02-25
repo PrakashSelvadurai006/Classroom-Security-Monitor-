@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Classroom Face Monitor — AI-powered student entry monitoring system">
+  <title>{% block title %}Dashboard{% endblock %} · ClassroomMonitor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📹</div>
+      <div>
+        <span>ClassMonitor<br><small>Face Recognition System</small></span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="{{ url_for('index') }}"       class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a href="{{ url_for('students') }}"    class="nav-link {% if request.endpoint in ['students','add_student'] %}active{% endif %}">
+        <span class="nav-icon">🎓</span> Students
+      </a>
+
+      <div class="nav-section-label">Logs</div>
+      <a href="{{ url_for('entry_logs') }}"  class="nav-link {% if request.endpoint == 'entry_logs' %}active{% endif %}">
+        <span class="nav-icon">📋</span> Entry Logs
+      </a>
+      <a href="{{ url_for('alerts') }}"      class="nav-link {% if request.endpoint == 'alerts' %}active{% endif %}">
+        <span class="nav-icon">🚨</span> Alerts
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      ClassroomMonitor v1.0<br>Powered by OpenRouter AI
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">
+              <span>{{ message }}</span>
+              <button class="flash-close" onclick="dismissFlash(this.parentElement)">✕</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

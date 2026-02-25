@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">🚨 System Alerts</div>
+        <div class="page-subtitle">All security alerts from the monitoring system</div>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-danger btn-sm" onclick="stopAlarm()">🔕 Stop Alarm</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearResolved()">🗑 Clear Resolved</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Severity</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if alerts %}
+                {% for alert in alerts %}
+                <tr id="alert-row-{{ alert.id }}">
+                    <td class="text-muted">{{ alert.id }}</td>
+                    <td>{{ alert.created_at.strftime('%d %b %Y · %H:%M') }}</td>
+                    <td>
+                        <span class="badge badge-blue">{{ alert.alert_type.replace('_', ' ').title() }}</span>
+                    </td>
+                    <td>
+                        {% if alert.severity == 'high' %}
+                        <span class="badge badge-red">🚨 High</span>
+                        {% elif alert.severity == 'medium' %}
+                        <span class="badge badge-yellow">⚠️ Medium</span>
+                        {% else %}
+                        <span class="badge badge-blue">ℹ️ Low</span>
+                        {% endif %}
+                    </td>
+                    <td style="max-width:280px;">{{ alert.message }}</td>
+                    <td>
+                        {% if alert.is_resolved %}
+                        <span class="badge badge-green">✔ Resolved</span>
+                        {% if alert.resolved_at %}
+                        <div class="text-muted" style="font-size:11px;margin-top:3px;">
+                            {{ alert.resolved_at.strftime('%d %b %H:%M') }}
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <span class="badge badge-red badge-pulse">● Active</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not alert.is_resolved %}
+                        <button class="btn btn-success btn-sm" onclick="resolveAlertPage({{ alert.id }})">
+                            ✔ Resolve
+                        </button>
+                        {% else %}
+                        <span class="text-muted" style="font-size:12px;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr class="empty-row">
+                    <td colspan="7">No alerts recorded. Your system is running clean 🎉</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function resolveAlertPage(id) {
+        const data = await postJson(`/resolve_alert/${id}`);
+        if (data.status === 'success') {
+            showToast('✔ Alert resolved', 'success');
+            // Update row UI without reload
+            const row = document.getElementById(`alert-row-${id}`);
+            if (row) {
+                const statusCell = row.cells[5];
+                const actionCell = row.cells[6];
+                statusCell.innerHTML = '<span class="badge badge-green">✔ Resolved</span>';
+                actionCell.innerHTML = '<span class="text-muted" style="font-size:12px;">—</span>';
+            }
+        } else {
+            showToast('❌ ' + data.message, 'error');
+        }
+    }
+
+    async function clearResolved() {
+        if (!confirmAction('Delete all resolved alerts?')) return;
+        const data = await postJson('/clear_alerts');
+        showToast(data.message, data.status === 'success' ? 'success' : 'error');
+        if (data.status === 'success') setTimeout(() => location.reload(), 1200);
+    }
+</script>
+{% endblock %}

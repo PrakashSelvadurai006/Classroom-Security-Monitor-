@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Add Student{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">➕ Add Student</div>
+        <div class="page-subtitle">Register a new student for face recognition</div>
+    </div>
+    <a href="{{ url_for('students') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+<div style="max-width:600px;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">👤 Student Details</div>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('add_student') }}" enctype="multipart/form-data"
+                id="add-student-form">
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label" for="name">Full Name <span>*</span></label>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Rahul Sharma"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="student_id">Student ID <span>*</span></label>
+                        <input type="text" id="student_id" name="student_id" class="form-control"
+                            placeholder="e.g. STU2024001" required>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control"
+                            placeholder="student@school.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91 98765 43210">
+                    </div>
+                </div>
+
+                <!-- Photo Upload -->
+                <div class="form-group">
+                    <label class="form-label">Student Photo <span>*</span></label>
+                    <div class="upload-area" id="upload-area">
+                        <input type="file" name="photo" id="photo-input" accept="image/*" required>
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">
+                            <strong>Click to upload</strong> or drag & drop<br>
+                            <small>PNG, JPG, JPEG, GIF up to 16MB</small>
+                        </div>
+                    </div>
+
+                    <!-- Live preview -->
+                    <div class="photo-preview-wrap" id="preview-wrap">
+                        <p class="text-muted" style="font-size:12px;margin-bottom:8px;">Preview</p>
+                        <img id="photo-preview" src="#" alt="Photo preview">
+                        <p class="form-hint" id="preview-filename"></p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="flash info" style="font-size:13px;">
+                        <span>📌 Use a clear, front-facing photo with good lighting. This will be used for face
+                            recognition.</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary" id="btn-submit">
+                        ✅ Enroll Student
+                    </button>
+                    <a href="{{ url_for('students') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const photoInput = document.getElementById('photo-input');
+    const previewWrap = document.getElementById('preview-wrap');
+    const previewImg = document.getElementById('photo-preview');
+    const previewName = document.getElementById('preview-filename');
+    const uploadArea = document.getElementById('upload-area');
+    const btnSubmit = document.getElementById('btn-submit');
+
+    photoInput.addEventListener('change', () => {
+        const file = photoInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            previewWrap.classList.add('visible');
+            previewName.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Drag & drop styling
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+    uploadArea.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        const dt = e.dataTransfer;
+        if (dt.files.length) {
+            photoInput.files = dt.files;
+            photoInput.dispatchEvent(new Event('change'));
+        }
+    });
+
+    // Loading state on submit
+    document.getElementById('add-student-form').addEventListener('submit', () => {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '⏳ Enrolling…';
+    });
+</script>
+{% endblock %}

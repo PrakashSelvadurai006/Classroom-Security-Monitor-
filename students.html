@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">🎓 Students</div>
+        <div class="page-subtitle">{{ students | length }} registered student{{ 's' if students | length != 1 }}</div>
+    </div>
+    <a href="{{ url_for('add_student') }}" class="btn btn-primary">+ Add Student</a>
+</div>
+
+{% if students %}
+<div class="student-grid">
+    {% for student in students %}
+    <div class="student-card">
+        {% if student.photo_path %}
+        <img class="student-photo"
+            src="{{ url_for('static', filename='uploads/known_faces/' + student.photo_path.split('/')[-1]) }}"
+            alt="{{ student.name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="student-photo-placeholder" style="display:none;">👤</div>
+        {% else %}
+        <div class="student-photo-placeholder">👤</div>
+        {% endif %}
+
+        <div class="student-info">
+            <div class="student-name">{{ student.name }}</div>
+            <div class="student-id">ID: {{ student.student_id }}</div>
+            {% if student.email %}
+            <div class="student-id" style="margin-top:2px;">✉ {{ student.email }}</div>
+            {% endif %}
+            <div class="mt-1">
+                {% if student.face_encoding %}
+                <span class="badge badge-green">✅ Face enrolled</span>
+                {% else %}
+                <span class="badge badge-yellow">⚠ No face data</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="student-actions">
+            <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}"
+                onsubmit="return confirmAction('Remove {{ student.name }} from the system?')" style="flex:1;">
+                <button type="submit" class="btn btn-danger btn-sm btn-full">🗑 Remove</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="card" style="text-align:center;padding:60px 20px;">
+    <div style="font-size:56px;margin-bottom:16px;">🎓</div>
+    <div style="font-size:18px;font-weight:600;margin-bottom:8px;">No students registered yet</div>
+    <div class="text-muted" style="margin-bottom:24px;">Add a student with their photo to start face recognition</div>
+    <a href="{{ url_for('add_student') }}" class="btn btn-primary">+ Add First Student</a>
+</div>
+{% endif %}
+
+{% endblock %}
