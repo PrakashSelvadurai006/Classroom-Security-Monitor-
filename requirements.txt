@@ -1,0 +1,13 @@
+flask==3.0.3
+flask-cors==4.0.1
+opencv-python==4.10.0.84
+pillow==11.0.0
+numpy==1.26.4
+python-dotenv==1.0.1
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.34
+flask-sqlalchemy==3.1.1
+requests==2.32.3
+werkzeug==3.0.3
+flask-migrate==4.0.7
+pygame==2.6.0
